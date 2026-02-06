@@ -2,6 +2,7 @@
 set -e
 
 REVISION="$1"
+DEB_VERSION="$2"
 SRC_DIR="/workspace/src/nginx"
 
 cd "$SRC_DIR"
@@ -15,4 +16,4 @@ make -j"$(nproc)"
 echo "[INFO] Stripping binary..."
 strip objs/nginx
 
-/workspace/scripts/package_deb.sh "$REVISION" "release" "Nginx release build"
+/workspace/scripts/package_deb.sh "$REVISION" "$DEB_VERSION" "Nginx release build"

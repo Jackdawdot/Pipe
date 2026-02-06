@@ -73,6 +73,7 @@ def main():
     state_dir = Path("state")
     build_number = get_and_increment_build_number(state_dir)
     revision = f"r{build_number}"
+    deb_version = str(build_number)
 
     if not docker_image_exists():
         print("[INFO] Docker image not found, building...")
@@ -89,7 +90,8 @@ def main():
         "-v", f"{project_dir}/artifacts:/workspace/artifacts",
         DOCKER_IMAGE,
         "bash", "-c",
-        f"chmod +x /workspace/scripts/*.sh && /workspace/scripts/container_build.sh {args.type} {revision} {args.nginx_tag}"
+        f"chmod +x /workspace/scripts/*.sh && "
+        f"/workspace/scripts/container_build.sh {args.type} {revision} {deb_version} {args.nginx_tag}"
     ])
 
     coverage_value = None

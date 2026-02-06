@@ -3,10 +3,11 @@ set -e
 
 BUILD_TYPE="$1"
 REVISION="$2"
-NGINX_TAG="$3"
+DEB_VERSION="$3"
+NGINX_TAG="$4
 
-if [ -z "$BUILD_TYPE" ] || [ -z "$REVISION" ] || [ -z "$NGINX_TAG" ]; then
-  echo "Usage: container_build.sh <release|debug|coverage> <revision> <nginx_tag>"
+if [ -z "$BUILD_TYPE" ] || [ -z "$REVISION" ] || [ -z "$DEB_VERSION" ] || [ -z "$NGINX_TAG" ]; then
+  echo "Usage: container_build.sh <release|debug|coverage> <revision> <deb_version> <nginx_tag>"
   exit 1
 fi
 
@@ -28,13 +29,13 @@ git checkout "$NGINX_TAG"
 
 case "$BUILD_TYPE" in
   release)
-    /workspace/scripts/build_release.sh "$REVISION"
+    /workspace/scripts/build_release.sh "$REVISION" "$DEB_VERSION"
     ;;
   debug)
-    /workspace/scripts/build_debug.sh "$REVISION"
+    /workspace/scripts/build_debug.sh "$REVISION" "$DEB_VERSION"
     ;;
   coverage)
-    /workspace/scripts/build_coverage.sh "$REVISION"
+    /workspace/scripts/build_coverage.sh "$REVISION" "$DEB_VERSION"
     ;;
   *)
     echo "Unknown build type: $BUILD_TYPE"

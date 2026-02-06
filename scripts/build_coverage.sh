@@ -2,6 +2,7 @@
 set -e
 
 REVISION="$1"
+DEB_VERSION="$2"
 SRC_DIR="/workspace/src/nginx"
 
 cd "$SRC_DIR"
@@ -56,4 +57,4 @@ echo "$SUMMARY" > "$LAST_FILE"
 echo "[INFO] Stripping binary..."
 strip objs/nginx
 
-/workspace/scripts/package_deb.sh "$REVISION" "coverage" "Nginx coverage build"
+/workspace/scripts/package_deb.sh "$REVISION" "$DEB_VERSION" "Nginx coverage build"

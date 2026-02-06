@@ -2,8 +2,9 @@
 set -e
 
 REVISION="$1"
-BUILD_TYPE="$2"
-DESC="$3"
+DEB_VERSION="$2"
+BUILD_TYPE="$3"
+DESC="$4"
 
 SRC_BIN="/workspace/src/nginx/objs/nginx"
 PKG_DIR="/tmp/nginx_deb_pkg"
@@ -17,7 +18,7 @@ cp "$SRC_BIN" "$PKG_DIR/usr/sbin/nginx"
 
 cat > "$PKG_DIR/DEBIAN/control" <<EOF
 Package: nginx
-Version: ${REVISION}
+Version: ${$DEB_VERSION}
 Architecture: amd64
 Maintainer: local-ci <local@ci>
 Description: ${DESC}
