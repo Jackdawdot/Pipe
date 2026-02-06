@@ -18,7 +18,7 @@ cp "$SRC_BIN" "$PKG_DIR/usr/sbin/nginx"
 
 cat > "$PKG_DIR/DEBIAN/control" <<EOF
 Package: nginx
-Version: ${$DEB_VERSION}
+Version: ${DEB_VERSION}
 Architecture: amd64
 Maintainer: local-ci <local@ci>
 Description: ${DESC}
