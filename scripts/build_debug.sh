@@ -22,4 +22,4 @@ strip objs/nginx
 echo "[INFO] Adding debug link..."
 objcopy --add-gnu-debuglink=/workspace/artifacts/debug/nginx_${REVISION}.debug objs/nginx
 
-/workspace/scripts/package_deb.sh "$REVISION" "$DEB_VERSION" "Nginx debug build (symbols separated)"
+/workspace/scripts/package_deb.sh "$REVISION" "1.0.0-debug" "Nginx debug build"

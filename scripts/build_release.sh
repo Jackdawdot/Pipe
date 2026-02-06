@@ -16,4 +16,4 @@ make -j"$(nproc)"
 echo "[INFO] Stripping binary..."
 strip objs/nginx
 
-/workspace/scripts/package_deb.sh "$REVISION" "$DEB_VERSION" "Nginx release build"
+/workspace/scripts/package_deb.sh "$REVISION" "1.0.0-release" "Nginx release build"

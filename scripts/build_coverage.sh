@@ -57,4 +57,4 @@ echo "$SUMMARY" > "$LAST_FILE"
 echo "[INFO] Stripping binary..."
 strip objs/nginx
 
-/workspace/scripts/package_deb.sh "$REVISION" "$DEB_VERSION" "Nginx coverage build"
+/workspace/scripts/package_deb.sh "$REVISION" "1.0.0-coverage" "Nginx coverage build"

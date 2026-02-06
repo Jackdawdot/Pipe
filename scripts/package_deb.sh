@@ -3,12 +3,16 @@ set -e
 
 REVISION="$1"
 DEB_VERSION="$2"
-BUILD_TYPE="$3"
-DESC="$4"
+DESC="$3"
 
 SRC_BIN="/workspace/src/nginx/objs/nginx"
 PKG_DIR="/tmp/nginx_deb_pkg"
-OUT="/workspace/artifacts/deb/nginx_${REVISION}_${BUILD_TYPE}.deb"
+OUT="/workspace/artifacts/deb/nginx_${REVISION}_${DEB_VERSION}.deb"
+
+if [ -z "$REVISION" ] || [ -z "$DEB_VERSION" ] || [ -z "$DESC" ]; then
+  echo "Usage: package_deb.sh <revision> <deb_version> <description>"
+  exit 1
+fi
 
 rm -rf "$PKG_DIR"
 mkdir -p "$PKG_DIR/DEBIAN"
@@ -22,6 +26,7 @@ Version: ${DEB_VERSION}
 Architecture: amd64
 Maintainer: local-ci <local@ci>
 Description: ${DESC}
+
 EOF
 
 dpkg-deb --build "$PKG_DIR" "$OUT"
