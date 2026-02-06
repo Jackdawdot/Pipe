@@ -7,7 +7,7 @@ DEB_VERSION="$3"
 NGINX_TAG="$4
 
 if [ -z "$BUILD_TYPE" ] || [ -z "$REVISION" ] || [ -z "$DEB_VERSION" ] || [ -z "$NGINX_TAG" ]; then
-  echo "Usage: container_build.sh <release|debug|coverage> <revision> <deb_version> <nginx_tag>"
+  echo "Usage: container_build.sh "<release|debug|coverage> <revision> <deb_version> <nginx_tag>"
   exit 1
 fi
 
