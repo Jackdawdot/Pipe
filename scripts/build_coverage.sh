@@ -7,6 +7,7 @@ SRC_DIR="/workspace/src/nginx"
 
 cd "$SRC_DIR"
 
+# Enable ccache (bonus)
 export CC="ccache gcc"
 export CXX="ccache g++"
 ccache -z || true
@@ -28,6 +29,9 @@ echo "[INFO] Running smoke test..."
 ./objs/nginx -V || true
 
 echo "[INFO] Capturing coverage..."
+# Clear previous counters to avoid stale data affecting the report
+lcov --zerocounters --directory . || true
+
 lcov --capture --directory . --output-file coverage.info
 lcov --remove coverage.info '/usr/*' --output-file coverage.info
 
@@ -35,19 +39,27 @@ REPORT_DIR="/workspace/artifacts/coverage/${REVISION}"
 mkdir -p "$REPORT_DIR"
 
 echo "[INFO] Generating HTML report..."
-genhtml coverage.info --output-directory "$REPORT_DIR"
+genhtml coverage.info --output-directory "$REPORT_DIR" >/dev/null
 
 echo "[INFO] Extracting line coverage percent..."
-SUMMARY=$(lcov --summary coverage.info | grep "lines" | awk '{print $2}' | sed 's/%//')
+SUMMARY_LINE="$(lcov --summary coverage.info | grep -i '^ *lines' || true)"
+SUMMARY="$(echo "$SUMMARY_LINE" | sed -n 's/.*: *\([0-9.]\+\)%.*/\1/p')"
+
+if [ -z "$SUMMARY" ]; then
+  echo "[ERROR] Could not parse lines coverage from lcov summary."
+  echo "[ERROR] lcov summary output was:"
+  lcov --summary coverage.info || true
+  exit 1
+fi
 
 echo "[INFO] Lines coverage: $SUMMARY"
 
-# Always write the current coverage for reporting
+# Always write the current coverage for reporting (so build.py can include it)
 echo "$SUMMARY" > /workspace/state/current_coverage.txt
 
 LAST_FILE="/workspace/state/last_coverage.txt"
 if [ -f "$LAST_FILE" ]; then
-  LAST=$(cat "$LAST_FILE")
+  LAST="$(cat "$LAST_FILE")"
 else
   LAST="0"
 fi
