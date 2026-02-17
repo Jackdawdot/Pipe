@@ -25,14 +25,24 @@ make -j"$(nproc)"
 echo "[INFO] ccache stats:"
 ccache -s || true
 
+echo "[INFO] Capturing coverage..."
+# 1) reset counters (cleanup any previous gcda data)
+lcov --zerocounters --directory . || true
+
+# 2) baseline capture (captures .gcno so the tracefile is always valid)
+lcov --capture --initial --directory . --output-file coverage_base.info
+
+# 3) run smoke test (must execute instrumented binary to generate .gcda)
 echo "[INFO] Running smoke test..."
 ./objs/nginx -V || true
 
-echo "[INFO] Capturing coverage..."
-# Clear previous counters to avoid stale data affecting the report
-lcov --zerocounters --directory . || true
+# 4) post-run capture (captures .gcda)
+lcov --capture --directory . --output-file coverage_run.info
 
-lcov --capture --directory . --output-file coverage.info
+# 5) merge baseline + run
+lcov -a coverage_base.info -a coverage_run.info -o coverage.info
+
+# 6) filter noise
 lcov --remove coverage.info '/usr/*' --output-file coverage.info
 
 REPORT_DIR="/workspace/artifacts/coverage/${REVISION}"
