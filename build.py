@@ -36,7 +36,8 @@ def get_and_increment_build_number(state_dir: Path) -> int:
     f = state_dir / "build_number.txt"
 
     if f.exists():
-        num = int(f.read_text().strip())
+        text = f.read_text().strip()
+        num = int(text) if text else 0
     else:
         num = 0
 
@@ -73,7 +74,8 @@ def main():
     state_dir = Path("state")
     build_number = get_and_increment_build_number(state_dir)
     revision = f"r{build_number}"
-    deb_version = str(build_number)
+    nginx_ver = args.nginx_tag.replace("release-", "")
+    deb_version = f"{nginx_ver}-{build_number}"
 
     if not docker_image_exists():
         print("[INFO] Docker image not found, building...")
@@ -95,9 +97,9 @@ def main():
     ])
 
     coverage_value = None
-    last_cov_file = Path("state/last_coverage.txt")
-    if args.type == "coverage" and last_cov_file.exists():
-        coverage_value = last_cov_file.read_text().strip()
+    cur_cov_file = Path("state/current_coverage.txt")
+    if args.type == "coverage" and cur_cov_file.exists():
+        coverage_value = cur_cov_file.read_text().strip()
 
     write_report(build_number, revision, args.type, coverage_value)
 
