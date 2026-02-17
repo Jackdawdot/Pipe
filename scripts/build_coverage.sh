@@ -32,9 +32,9 @@ lcov --zerocounters --directory . || true
 # 2) baseline capture (captures .gcno so the tracefile is always valid)
 lcov --capture --initial --directory . --output-file coverage_base.info
 
-# 3) run smoke test (must execute instrumented binary to generate .gcda)
+# 3) run smoke test (execute instrumented code; -t usually exercises more code than -V)
 echo "[INFO] Running smoke test..."
-./objs/nginx -V || true
+./objs/nginx -t -c conf/nginx.conf || true
 
 # 4) post-run capture (captures .gcda)
 lcov --capture --directory . --output-file coverage_run.info
@@ -45,6 +45,12 @@ lcov -a coverage_base.info -a coverage_run.info -o coverage.info
 # 6) filter noise
 lcov --remove coverage.info '/usr/*' --output-file coverage.info
 
+# Diagnostics: help understand why coverage might be empty on some systems
+echo "[INFO] coverage.info size:"
+ls -la coverage.info || true
+echo "[INFO] coverage.info first lines:"
+head -n 20 coverage.info || true
+
 REPORT_DIR="/workspace/artifacts/coverage/${REVISION}"
 mkdir -p "$REPORT_DIR"
 
@@ -52,13 +58,18 @@ echo "[INFO] Generating HTML report..."
 genhtml coverage.info --output-directory "$REPORT_DIR" >/dev/null
 
 echo "[INFO] Extracting line coverage percent..."
-SUMMARY_LINE="$(lcov --summary coverage.info | grep -i '^ *lines' || true)"
-SUMMARY="$(echo "$SUMMARY_LINE" | sed -n 's/.*: *\([0-9.]\+\)%.*/\1/p')"
+echo "[INFO] lcov summary:"
+LCOV_SUMMARY="$(lcov --summary coverage.info || true)"
+echo "$LCOV_SUMMARY"
+
+# Try to extract "<number>%" from the Lines row (handles different formats/cases)
+SUMMARY="$(echo "$LCOV_SUMMARY" | sed -n 's/^[[:space:]]*[Ll]ines.*: *\([0-9.]\+\)%.*/\1/p')"
+if [ -z "$SUMMARY" ]; then
+  SUMMARY="$(echo "$LCOV_SUMMARY" | sed -n 's/^[[:space:]]*lines[^:]*: *\([0-9.]\+\)%.*/\1/p')"
+fi
 
 if [ -z "$SUMMARY" ]; then
-  echo "[ERROR] Could not parse lines coverage from lcov summary."
-  echo "[ERROR] lcov summary output was:"
-  lcov --summary coverage.info || true
+  echo "[ERROR] Could not parse lines coverage percent from lcov summary."
   exit 1
 fi
 
