@@ -32,7 +32,8 @@ lcov --zerocounters --directory . || true
 # 2) baseline capture (captures .gcno so the tracefile is always valid)
 lcov --capture --initial --directory . --output-file coverage_base.info
 
-# 3) run smoke test (execute instrumented code; -t usually exercises more code than -V)
+# 3) run smoke test (execute instrumented code)
+# NOTE: nginx -t may fail due to default prefix paths, but still exercises code paths.
 echo "[INFO] Running smoke test..."
 ./objs/nginx -t -c conf/nginx.conf || true
 
@@ -45,7 +46,7 @@ lcov -a coverage_base.info -a coverage_run.info -o coverage.info
 # 6) filter noise
 lcov --remove coverage.info '/usr/*' --output-file coverage.info
 
-# Diagnostics: help understand why coverage might be empty on some systems
+# Diagnostics
 echo "[INFO] coverage.info size:"
 ls -la coverage.info || true
 echo "[INFO] coverage.info first lines:"
@@ -62,7 +63,6 @@ echo "[INFO] lcov summary:"
 LCOV_SUMMARY="$(lcov --summary coverage.info || true)"
 echo "$LCOV_SUMMARY"
 
-# Try to extract "<number>%" from the Lines row (handles different formats/cases)
 SUMMARY="$(echo "$LCOV_SUMMARY" | sed -n 's/^[[:space:]]*[Ll]ines.*: *\([0-9.]\+\)%.*/\1/p')"
 if [ -z "$SUMMARY" ]; then
   SUMMARY="$(echo "$LCOV_SUMMARY" | sed -n 's/^[[:space:]]*lines[^:]*: *\([0-9.]\+\)%.*/\1/p')"
@@ -80,8 +80,13 @@ echo "$SUMMARY" > /workspace/state/current_coverage.txt
 
 LAST_FILE="/workspace/state/last_coverage.txt"
 if [ -f "$LAST_FILE" ]; then
-  LAST="$(cat "$LAST_FILE")"
+  LAST="$(cat "$LAST_FILE" | tr -d ' \r\n\t')"
 else
+  LAST="0"
+fi
+
+# If file existed but was empty -> treat as 0
+if [ -z "$LAST" ]; then
   LAST="0"
 fi
 
