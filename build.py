@@ -10,21 +10,32 @@ DOCKERFILE_PATH = "docker/Dockerfile"
 DEFAULT_NGINX_TAG = "release-1.24.0"
 
 
-def run(cmd: list[str]) -> str:
+def run(cmd: list[str], *, quiet: bool = False) -> str:
     print(">>", " ".join(cmd))
-    result = subprocess.run(cmd, capture_output=True, text=True)
+
+    if quiet:
+        result = subprocess.run(cmd, capture_output=True, text=True)
+    else:
+        result = subprocess.run(cmd, text=True)
 
     if result.returncode != 0:
-        print(result.stdout)
-        print(result.stderr, file=sys.stderr)
+        if quiet:
+            print(result.stdout)
+            print(result.stderr, file=sys.stderr)
         raise RuntimeError(f"Command failed: {' '.join(cmd)}")
 
-    return result.stdout.strip()
+    return (result.stdout or "").strip() if quiet else ""
 
 
 def docker_image_exists() -> bool:
-    out = run(["docker", "images", "-q", DOCKER_IMAGE])
-    return len(out) > 0
+    # Reliable check for image existence (works with repo:tag)
+    result = subprocess.run(
+        ["docker", "image", "inspect", DOCKER_IMAGE],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        text=True,
+    )
+    return result.returncode == 0
 
 
 def build_image():
