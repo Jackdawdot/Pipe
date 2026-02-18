@@ -100,6 +100,7 @@ def main():
         "docker", "run", "--rm",
         "-v", f"{project_dir}:/workspace",
         "-v", f"{project_dir}/state:/workspace/state",
+        "-v", f"{project_dir}/state/ccache:/ccache",
         "-v", f"{project_dir}/artifacts:/workspace/artifacts",
         DOCKER_IMAGE,
         "bash", "-c",
