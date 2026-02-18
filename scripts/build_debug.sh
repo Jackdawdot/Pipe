@@ -7,19 +7,30 @@ SRC_DIR="/workspace/src/nginx"
 
 cd "$SRC_DIR"
 
+# Enable ccache (bonus)
+export CC="ccache gcc"
+export CXX="ccache g++"
+ccache -z || true
+
 echo "[INFO] Configuring debug build..."
 ./auto/configure --with-debug --with-http_ssl_module
 
 echo "[INFO] Building..."
 make -j"$(nproc)"
 
+echo "[INFO] ccache stats:"
+ccache -s || true
+
+# Ensure debug artifacts dir exists
+mkdir -p /workspace/artifacts/debug
+
 echo "[INFO] Extracting debug symbols..."
-objcopy --only-keep-debug objs/nginx /workspace/artifacts/debug/nginx_${REVISION}.debug
+objcopy --only-keep-debug objs/nginx "/workspace/artifacts/debug/nginx_${REVISION}.debug"
 
 echo "[INFO] Stripping binary..."
 strip objs/nginx
 
 echo "[INFO] Adding debug link..."
-objcopy --add-gnu-debuglink=/workspace/artifacts/debug/nginx_${REVISION}.debug objs/nginx
+objcopy --add-gnu-debuglink="/workspace/artifacts/debug/nginx_${REVISION}.debug" objs/nginx
 
-/workspace/scripts/package_deb.sh "$REVISION" "1.0.0-debug" "Nginx debug build"
+/workspace/scripts/package_deb.sh "$REVISION" "$DEB_VERSION" "Nginx debug build (symbols separated)"
