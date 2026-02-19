@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
   && rm -rf /var/lib/apt/lists/*
 
-# ccache (persist via volume mount from host if desired)
+# ccache
 ENV CCACHE_DIR=/ccache
 RUN mkdir -p /ccache && chmod 777 /ccache
 ENV PATH="/usr/lib/ccache:${PATH}"
